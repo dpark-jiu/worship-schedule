@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>JIU 예배·기도 일정</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&amp;family=Noto&#43;Sans&#43;KR:wght@400;500;600;700&amp;display=swap"
+      rel="stylesheet" media="print" onload="this.media='all'">
+<style>
+  :root{
+    --navy:#242E6D; --navy-deep:#171D48; --navy-soft:#E7E9F5;
+    --teal:#0E7C7B; --teal-deep:#0A5453; --teal-soft:#E4F2F1; --teal-tint:#F3FAF9; --teal-bright:#6FE3D6;
+    --yellow:#EABD2C; --ink:#1E2340; --line:#C9CCE3; --paper:#fff; --bg:#F3F1EA; --muted:#6B7094;
+  }
+  *{ box-sizing:border-box; }
+  body{
+    margin:0; background:var(--bg); color:var(--ink); padding:24px 16px 56px;
+    font-family:"Noto Sans KR",-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  }
+  .wrap{ max-width:1000px; margin:0 auto; }
+
+  .top{ display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:16px; }
+  .brand{ font-family:"Poppins","Noto Sans KR",sans-serif; font-weight:700; font-size:17px; color:var(--navy-deep); }
+  .badge{ font-size:11.5px; font-weight:700; color:var(--muted); background:#fff; border:1.3px solid var(--line); padding:5px 11px; border-radius:999px; }
+  .sync{
+    display:inline-flex; align-items:center; gap:6px; cursor:pointer; font-family:inherit;
+    font-size:11.5px; font-weight:700; padding:5px 11px; border-radius:999px;
+    border:1.3px solid #cdeac0; background:#F4FAF1; color:#69A94F;
+  }
+  .sync .dot{ width:7px; height:7px; border-radius:50%; background:#69A94F; }
+  .sync.busy{ border-color:#c3c9e6; background:var(--navy-soft); color:var(--navy-deep); }
+  .sync.busy .dot{ background:var(--navy); animation:pulse 1s ease-in-out infinite; }
+  .sync.err{ border-color:#f2d3c8; background:#FDF3EF; color:#B5442B; }
+  .sync.err .dot{ background:#D9552F; }
+  .sync:hover{ filter:brightness(.97); }
+  @keyframes pulse{ 0%,100%{opacity:1;transform:scale(1);} 50%{opacity:.35;transform:scale(1.3);} }
+  .lang-wrap{
+    display:inline-flex; align-items:center; gap:5px;
+    border:1.3px solid var(--line); background:#fff; border-radius:999px; padding:3px 4px 3px 10px;
+  }
+  .lang-wrap:hover{ border-color:#b4b9d6; }
+  .lang-wrap span{ font-size:13px; line-height:1; }
+  #langSelect{
+    border:none; background:none; font-family:inherit; font-size:12.5px; font-weight:700;
+    color:var(--navy-deep); padding:4px 4px; cursor:pointer;
+  }
+  #langSelect:focus{ outline:none; }
+
+  .monthbar{ display:flex; align-items:center; justify-content:center; gap:6px; margin-bottom:18px; }
+  .monthbar a{
+    display:inline-flex; align-items:center; justify-content:center; width:34px; height:34px;
+    border:1.3px solid var(--line); background:#fff; border-radius:9px; text-decoration:none;
+    color:var(--navy); font-weight:700;
+  }
+  .monthbar a:hover{ background:var(--navy-soft); }
+  .monthbar .label{ font-family:"Poppins","Noto Sans KR",sans-serif; font-weight:700; font-size:17px; color:var(--navy-deep); padding:0 12px; }
+
+  .card{ background:var(--paper); border:1.5px solid var(--line); border-radius:14px; overflow:hidden; margin-bottom:22px; }
+  .card h2{
+    margin:0; padding:14px 18px; font-size:15px; letter-spacing:.01em;
+    font-family:"Poppins","Noto Sans KR",sans-serif; color:#fff;
+  }
+  .card.worship h2{ background:linear-gradient(135deg,var(--navy) 0%,var(--navy-deep) 100%); }
+  .card.prayer  h2{ background:linear-gradient(135deg,var(--teal) 0%,var(--teal-deep) 100%); }
+  .card h2 span{ opacity:.75; font-weight:600; font-size:12.5px; margin-left:8px; }
+
+  table{ width:100%; border-collapse:collapse; }
+  th, td{ border-bottom:1px solid var(--line); padding:11px 10px; font-size:13.5px; text-align:center; vertical-align:middle; }
+  th{ background:#F5F6FB; color:var(--navy-deep); font-weight:700; font-size:12.5px; }
+  .prayer th{ background:var(--teal-soft); color:var(--teal-deep); }
+  td.date{ font-weight:700; color:var(--navy-deep); white-space:nowrap; }
+  .prayer td.date{ color:var(--teal-deep); }
+  td.left{ text-align:left; }
+  .muted{ color:#9aa0bd; }
+  tr.now td{ background:#FFFBEF; }
+  .prayer tr.now td{ background:var(--teal-tint); }
+  tr.now td.date::after{
+    content:attr(data-badge); display:inline-block; margin-left:6px; font-size:10px; font-weight:700;
+    background:var(--yellow); color:var(--navy-deep); padding:2px 7px; border-radius:999px; vertical-align:middle;
+  }
+  .prayer tr.now td.date::after{ background:var(--teal); color:#fff; }
+  .topics{ margin:0; padding-left:18px; text-align:left; }
+  .topics li{ margin:3px 0; line-height:1.6; }
+  .hymn a{ color:var(--teal); font-weight:700; text-decoration:none; border-bottom:1px dashed #8fc9c6; }
+
+  .scroll{ overflow-x:auto; -webkit-overflow-scrolling:touch; }
+  .scroll table{ min-width:760px; }
+  .prayer .scroll table{ min-width:640px; }
+
+  .foot{ font-size:12px; color:var(--muted); text-align:center; line-height:1.7; }
+
+  @media (max-width:640px){
+    body{ padding:16px 10px 44px; }
+    .card h2{ font-size:14px; padding:12px 14px; }
+    th, td{ padding:9px 7px; font-size:12.5px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <span class="brand">JIU 예배 · 기도</span>
+    <span style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+      <button type="button" class="sync" id="syncBtn" title="지금 다시 불러오기"><span class="dot"></span><span id="syncLabel">…</span></button>
+      <span class="lang-wrap"><span aria-hidden="true">🌐</span><select id="langSelect" title="Language / 언어 / Bahasa / 语言 / 言語"></select></span>
+      <span class="badge" id="viewBadge">보기 전용</span>
+    </span>
+  </div>
+
+  <div class="monthbar">
+    <a id="prevLink" href="#" title="이전 달">◀</a>
+    <span class="label" id="monthLabel"></span>
+    <a id="nextLink" href="#" title="다음 달">▶</a>
+  </div>
+
+  <section class="card worship">
+    <h2 id="worshipTitle"></h2>
+    <div class="scroll"><table id="worshipTable"></table></div>
+  </section>
+
+  <section class="card prayer">
+    <h2 id="prayerTitle"></h2>
+    <div class="scroll"><table id="prayerTable"></table></div>
+  </section>
+
+  <p class="foot" id="foot"></p>
+</div>
+
+<script>
+  
+
+  const DATA_URL = 'https://cdn.jsdelivr.net/gh/dpark-jiu/worship-schedule@data/data.json';   
+  const API_URL  = 'https://api.github.com/repos/dpark-jiu/worship-schedule/contents/data.json?ref=data';    
+  let RAW = { months: {}, aliases: {} };
+  const BASE = '';
+  const START_YM = (location.hash || '').replace('#', '');
+
+   
+  const pad = n => String(n).padStart(2,'0');
+  const ymOf = (y, m) => y + '-' + pad(m);
+  const daysOf = (y, mi, dow) => { const out=[]; const d=new Date(y,mi,1); while(d.getMonth()===mi){ if(d.getDay()===dow) out.push(d.getDate()); d.setDate(d.getDate()+1);} return out; };
+  const todayD = new Date(); todayD.setHours(0,0,0,0);
+  const nextDow = dow => { const d=new Date(todayD); while(d.getDay()!==dow) d.setDate(d.getDate()+1); return d; };
+  const isoOf = d => ymOf(d.getFullYear(), d.getMonth()+1) + '-' + pad(d.getDate());
+  const TODAY_THU = isoOf(nextDow(4)), TODAY_TUE = isoOf(nextDow(2));
+
+  let curY, curM;   
+  (function(){
+    const m = String(START_YM||'').match(/^(\d{4})-(\d{2})$/);
+    if(m){ curY = +m[1]; curM = +m[2]; }
+    else { const t = nextDow(4); curY = t.getFullYear(); curM = t.getMonth()+1; }   
+  })();
+
+  
+  function buildMonth(y, m){
+    const ym = ymOf(y, m), mi = m - 1;
+    const src = (RAW.months && RAW.months[ym]) || { worship: [], prayer: [] };
+    const thu = daysOf(y, mi, 4), tue = daysOf(y, mi, 2);
+    const wBy = {}; (src.worship||[]).forEach(r => { wBy[r[0]] = r; });
+    const pBy = {}; (src.prayer||[]).forEach(r => { pBy[r[0]] = r; });
+    const prev = new Date(y, mi-1, 1), next = new Date(y, mi+1, 1);
+    return {
+      year: y, month: m,
+      prevYm: ymOf(prev.getFullYear(), prev.getMonth()+1),
+      nextYm: ymOf(next.getFullYear(), next.getMonth()+1),
+      todayThu: TODAY_THU, todayTue: TODAY_TUE,
+      aliases: RAW.aliases || {},
+      worship: thu.map((d,i) => { const r = wBy[d] || []; return {
+        date: ym+'-'+pad(d), day:d, week:'W'+(i+1),
+        messenger:r[1]||'', benediction:r[2]||'', leader:r[3]||'', multimedia:r[4]||'', prayer:r[5]||'', remarks:r[6]||'' }; }),
+      prayer: tue.map(d => { const r = pBy[d] || []; return {
+        date: ym+'-'+pad(d), day:d, leader:r[1]||'', hymn:r[2]||'', topics:Array.isArray(r[3])?r[3]:[], remarks:r[4]||'' }; })
+    };
+  }
+  let DATA = buildMonth(curY, curM);
+
+  const LANGS = [
+    { code:'ko', label:'한국어' }, { code:'en', label:'English' },
+    { code:'id', label:'Bahasa Indonesia' }, { code:'zh', label:'中文' }, { code:'ja', label:'日本語' }
+  ];
+  const L = {
+    ko:{ badge:'보기 전용', worship:'목요 사역자 예배', prayer:'화요 기도모임',
+         date:'날짜', messenger:'설교', benediction:'축도', leader:'찬양 인도', multimedia:'미디어',
+         prayerCol:'기도', remarks:'비고', pleader:'인도', hymn:'찬송', topics:'기도제목',
+         none:'아직 정해지지 않았습니다', now:'이번 주',
+         upToDate:'최신', loading:'불러오는 중…', offline:'연결 실패 · 다시 시도',
+         foot:'이 화면은 보기 전용입니다. 일정 수정은 담당자에게 문의해 주세요.' },
+    en:{ badge:'View only', worship:'Thursday Staff Worship', prayer:'Tuesday Prayer Meeting',
+         date:'Date', messenger:'Messenger', benediction:'Benediction', leader:'Worship Leader', multimedia:'Multimedia',
+         prayerCol:'Prayer', remarks:'Remarks', pleader:'Leader', hymn:'Hymn', topics:'Prayer topics',
+         none:'Not set yet', now:'This week',
+         upToDate:'Up to date', loading:'Loading…', offline:'Offline · tap to retry',
+         foot:'This page is read-only. Please contact the coordinator to change the schedule.' },
+    id:{ badge:'Hanya baca', worship:'Ibadah Staf Kamis', prayer:'Persekutuan Doa Selasa',
+         date:'Tanggal', messenger:'Pengkhotbah', benediction:'Berkat', leader:'Pemimpin Pujian', multimedia:'Multimedia',
+         prayerCol:'Doa', remarks:'Catatan', pleader:'Pemimpin', hymn:'Kidung', topics:'Pokok doa',
+         none:'Belum ditentukan', now:'Minggu ini',
+         upToDate:'Terbaru', loading:'Memuat…', offline:'Gagal · coba lagi',
+         foot:'Halaman ini hanya untuk dibaca. Hubungi koordinator untuk mengubah jadwal.' },
+    zh:{ badge:'仅查看', worship:'周四同工礼拜', prayer:'周二祷告会',
+         date:'日期', messenger:'讲员', benediction:'祝祷', leader:'敬拜带领', multimedia:'多媒体',
+         prayerCol:'祷告', remarks:'备注', pleader:'带领', hymn:'诗歌', topics:'祷告事项',
+         none:'尚未安排', now:'本周',
+         upToDate:'最新', loading:'加载中…', offline:'连接失败 · 重试',
+         foot:'本页面仅供查看。如需修改安排，请联系负责人。' },
+    ja:{ badge:'閲覧のみ', worship:'木曜スタッフ礼拝', prayer:'火曜祈祷会',
+         date:'日付', messenger:'説教', benediction:'祝祷', leader:'賛美リード', multimedia:'メディア',
+         prayerCol:'祈り', remarks:'備考', pleader:'司会', hymn:'賛美歌', topics:'祈祷課題',
+         none:'未定です', now:'今週',
+         upToDate:'最新', loading:'読み込み中…', offline:'接続失敗 · 再試行',
+         foot:'このページは閲覧専用です。予定の変更は担当者にお問い合わせください。' }
+  };
+
+  let lang = (function(){
+    try{ const v = localStorage.getItem('viewLang'); if(LANGS.some(l => l.code === v)) return v; }catch(e){}
+    const n = (navigator.language || 'ko').toLowerCase();
+    if(n.startsWith('ko')) return 'ko';
+    if(n.startsWith('id')) return 'id';
+    if(n.startsWith('zh')) return 'zh';
+    if(n.startsWith('ja')) return 'ja';
+    return 'en';
+  })();
+  const t = k => L[lang][k];
+
+  const esc = v => String(v == null ? '' : v)
+    .replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+  
+  const nm = v => {
+    const s = String(v || '');
+    if(!s) return '';
+    return lang === 'ko' ? s : (DATA.aliases[s] || s);
+  };
+  const cell = v => v ? esc(nm(v)) : '<span class="muted">–</span>';
+
+  function hymnUrl(v){
+    const s = String(v || '').trim();
+    if(!s) return '';
+    const isNo = /^\s*(새?찬송가|찬송)?\s*\d+\s*장/.test(s) || /^\d+\s*장?$/.test(s);
+    const q = isNo ? ('새찬송가 ' + (s.match(/\d+/)||[])[0] + '장 악보') : (s + ' 악보');
+    return 'https://www.google.com/search?tbm=isch&q=' + encodeURIComponent(q);
+  }
+
+  function mdLabel(iso){
+    const p = iso.split('-'); const m = parseInt(p[1],10), d = parseInt(p[2],10);
+    if(lang === 'ko') return m + '월 ' + d + '일';
+    if(lang === 'ja' || lang === 'zh') return m + '月' + d + '日';
+    if(lang === 'id') return d + '/' + m;      
+    return m + '/' + d;
+  }
+
+  function render(){
+    const d = L[lang];
+    document.documentElement.lang = lang;
+    document.getElementById('langSelect').value = lang;
+    paintSync();
+    document.getElementById('viewBadge').textContent = d.badge;
+    document.getElementById('monthLabel').textContent = DATA.year + '. ' + DATA.month;
+    document.getElementById('foot').textContent = d.foot;
+
+    document.getElementById('prevLink').href = '#' + DATA.prevYm;
+    document.getElementById('nextLink').href = '#' + DATA.nextYm;
+
+    document.getElementById('worshipTitle').innerHTML = esc(d.worship) + '<span>' + DATA.year + '. ' + DATA.month + '</span>';
+    document.getElementById('prayerTitle').innerHTML  = esc(d.prayer)  + '<span>' + DATA.year + '. ' + DATA.month + '</span>';
+
+    document.getElementById('worshipTable').innerHTML =
+      '<thead><tr>' +
+        '<th style="width:96px">' + esc(d.date) + '</th>' +
+        '<th>' + esc(d.messenger) + '</th><th>' + esc(d.benediction) + '</th>' +
+        '<th>' + esc(d.leader) + '</th><th>' + esc(d.multimedia) + '</th>' +
+        '<th>' + esc(d.prayerCol) + '</th><th>' + esc(d.remarks) + '</th>' +
+      '</tr></thead><tbody>' +
+      DATA.worship.map(function(r){
+        const now = r.date === DATA.todayThu;
+        return '<tr class="' + (now ? 'now' : '') + '">' +
+          '<td class="date" data-badge="' + esc(d.now) + '">' + esc(mdLabel(r.date)) + '</td>' +
+          '<td>' + cell(r.messenger) + '</td><td>' + cell(r.benediction) + '</td>' +
+          '<td>' + cell(r.leader) + '</td><td>' + cell(r.multimedia) + '</td>' +
+          '<td>' + cell(r.prayer) + '</td>' +
+          '<td class="left">' + (r.remarks ? esc(r.remarks) : '') + '</td></tr>';
+      }).join('') + '</tbody>';
+
+    document.getElementById('prayerTable').innerHTML =
+      '<thead><tr>' +
+        '<th style="width:96px">' + esc(d.date) + '</th>' +
+        '<th style="width:120px">' + esc(d.pleader) + '</th>' +
+        '<th style="width:170px">' + esc(d.hymn) + '</th>' +
+        '<th>' + esc(d.topics) + '</th>' +
+      '</tr></thead><tbody>' +
+      DATA.prayer.map(function(r){
+        const now = r.date === DATA.todayTue;
+        const url = hymnUrl(r.hymn);
+        return '<tr class="' + (now ? 'now' : '') + '">' +
+          '<td class="date" data-badge="' + esc(d.now) + '">' + esc(mdLabel(r.date)) + '</td>' +
+          '<td>' + cell(r.leader) + '</td>' +
+          '<td class="hymn">' + (r.hymn
+              ? '<a href="' + url + '" target="_blank" rel="noopener">🎵 ' + esc(r.hymn) + '</a>'
+              : '<span class="muted">–</span>') + '</td>' +
+          '<td class="left">' + (r.topics.length
+              ? '<ol class="topics">' + r.topics.map(function(x){ return '<li>' + esc(x) + '</li>'; }).join('') + '</ol>'
+              : '<span class="muted">–</span>') + '</td></tr>';
+      }).join('') + '</tbody>';
+  }
+
+  function goto(ym){
+    const m = String(ym||'').match(/^(\d{4})-(\d{2})$/);
+    if(!m) return;
+    curY = +m[1]; curM = +m[2];
+    DATA = buildMonth(curY, curM);
+    try{ history.replaceState(null, '', '#' + ym); }catch(e){}
+    render();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  document.getElementById('prevLink').addEventListener('click', e => { e.preventDefault(); goto(DATA.prevYm); });
+  document.getElementById('nextLink').addEventListener('click', e => { e.preventDefault(); goto(DATA.nextYm); });
+
+   
+  let syncState = 'ok', lastSync = new Date();
+  function paintSync(){
+    const btn = document.getElementById('syncBtn'), lb = document.getElementById('syncLabel');
+    btn.className = 'sync' + (syncState === 'busy' ? ' busy' : syncState === 'err' ? ' err' : '');
+    const hhmm = lastSync.toLocaleTimeString(lang === 'ko' ? 'ko-KR' : lang === 'ja' ? 'ja-JP' : lang === 'zh' ? 'zh-CN' : lang === 'id' ? 'id-ID' : 'en-US', { hour:'2-digit', minute:'2-digit' });
+    lb.textContent = syncState === 'busy' ? L[lang].loading : syncState === 'err' ? L[lang].offline : (L[lang].upToDate + ' · ' + hhmm);
+  }
+  let refreshing = false;
+  async function fetchData(){
+    
+    try{
+      const r = await fetch(DATA_URL + '?t=' + Date.now(), { cache: 'no-store' });
+      if(r.ok) return await r.json();
+    }catch(e){}
+    
+    const r2 = await fetch(API_URL, { headers: { 'Accept': 'application/vnd.github.raw' }, cache: 'no-store' });
+    if(!r2.ok) throw new Error('fetch failed');
+    return await r2.json();
+  }
+  function refresh(){
+    if(refreshing) return;
+    refreshing = true; syncState = 'busy'; paintSync();
+    fetchData().then(function(d){
+      if(d && d.months){
+        RAW = d; DATA = buildMonth(curY, curM);
+        try{ localStorage.setItem('viewCache', JSON.stringify(d)); }catch(e){}
+      }
+      lastSync = new Date(); syncState = 'ok'; refreshing = false; render();
+    }).catch(function(){
+      syncState = 'err'; refreshing = false; paintSync();
+    });
+  }
+  
+  try{ const c = localStorage.getItem('viewCache'); if(c){ RAW = JSON.parse(c); DATA = buildMonth(curY, curM); } }catch(e){}
+  document.getElementById('syncBtn').addEventListener('click', refresh);
+  
+  document.addEventListener('visibilitychange', function(){ if(document.visibilityState === 'visible') refresh(); });
+  window.addEventListener('online', refresh);
+
+  (function(){
+    const sel = document.getElementById('langSelect');
+    LANGS.forEach(l => { const o = document.createElement('option'); o.value = l.code; o.textContent = l.label; sel.appendChild(o); });
+    sel.addEventListener('change', function(){
+      lang = sel.value;
+      try{ localStorage.setItem('viewLang', lang); }catch(e){}
+      render();
+    });
+  })();
+
+  render();
+  refresh();
+</script>
+</body>
+</html>
