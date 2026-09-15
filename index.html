@@ -131,7 +131,8 @@
 <script>
   
 
-  const DATA_URL = 'https://cdn.jsdelivr.net/gh/dpark-jiu/worship-schedule@data/data.json';   
+  const DATA_URL = 'https://raw.githubusercontent.com/dpark-jiu/worship-schedule/data/data.json';   
+  const CDN_URL  = 'https://cdn.jsdelivr.net/gh/dpark-jiu/worship-schedule@data/data.json';    
   const API_URL  = 'https://api.github.com/repos/dpark-jiu/worship-schedule/contents/data.json?ref=data';    
   let RAW = { months: {}, aliases: {} };
   const BASE = '';
@@ -344,9 +345,14 @@
       if(r.ok) return await r.json();
     }catch(e){}
     
-    const r2 = await fetch(API_URL, { headers: { 'Accept': 'application/vnd.github.raw' }, cache: 'no-store' });
-    if(!r2.ok) throw new Error('fetch failed');
-    return await r2.json();
+    try{
+      const r2 = await fetch(CDN_URL + '?t=' + Date.now(), { cache: 'no-store' });
+      if(r2.ok) return await r2.json();
+    }catch(e){}
+    
+    const r3 = await fetch(API_URL, { headers: { 'Accept': 'application/vnd.github.raw' }, cache: 'no-store' });
+    if(!r3.ok) throw new Error('fetch failed');
+    return await r3.json();
   }
   function refresh(){
     if(refreshing) return;
