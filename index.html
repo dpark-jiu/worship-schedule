@@ -154,6 +154,17 @@
   })();
 
   
+  function cleanTopics(arr){
+    return (Array.isArray(arr) ? arr : String(arr || '').split('\n'))
+      .map(t => String(t)
+        .replace(/^\s*[-–—•*·]\s*/, '')
+        .replace(/^\s*\(?\d{1,2}\s*[.)]\s*/, '')
+        .replace(/^\s*[①②③④⑤⑥⑦⑧⑨⑩]\s*/, '')
+        .trim())
+      .filter(Boolean);
+  }
+
+  
   function buildMonth(y, m){
     const ym = ymOf(y, m), mi = m - 1;
     const src = (RAW.months && RAW.months[ym]) || { worship: [], prayer: [] };
@@ -171,7 +182,7 @@
         date: ym+'-'+pad(d), day:d, week:'W'+(i+1),
         messenger:r[1]||'', benediction:r[2]||'', leader:r[3]||'', multimedia:r[4]||'', prayer:r[5]||'', remarks:r[6]||'' }; }),
       prayer: tue.map(d => { const r = pBy[d] || []; return {
-        date: ym+'-'+pad(d), day:d, leader:r[1]||'', hymn:r[2]||'', topics:Array.isArray(r[3])?r[3]:[], remarks:r[4]||'' }; })
+        date: ym+'-'+pad(d), day:d, leader:r[1]||'', hymn:r[2]||'', topics:cleanTopics(r[3]), remarks:r[4]||'' }; })
     };
   }
   let DATA = buildMonth(curY, curM);
